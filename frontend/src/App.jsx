@@ -35,7 +35,7 @@ function App() {
   setTelemetry((prev) => [...prev, `\n> UPLOADING: ${file.name} to RAG engine...`]);
 
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/upload', {
+    const response = await fetch('https://ironlabs-api.onrender.com/api/upload', {
       method: 'POST',
       body: formData,
     });
@@ -57,7 +57,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+      const response = await fetch('https://ironlabs-api.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage }),
