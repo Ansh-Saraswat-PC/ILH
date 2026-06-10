@@ -1,36 +1,34 @@
-from langchain.agents import initialize_agent, AgentType
-from langchain.tools import tool
-from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-# 1. Define your custom enterprise tools here
-@tool
-def process_refund(customer_id: str, amount: float) -> str:
-    """Useful for processing refunds in customer support use-cases."""
-    # Mock logic - replace with actual hackathon API/logic
-    return f"Successfully initiated refund of ${amount} for customer {customer_id}."
+# Define the structured schema for the evaluation report
+class EvalResult(BaseModel):
+    score: int = Field(description="Score from 1 to 5 based on accuracy and helpfulness.")
+    reasoning: str = Field(description="Why this score was given.")
 
-@tool
-def query_database(query: str) -> str:
-    """Useful for looking up user records or financial data."""
-    # Mock logic - you will map this to the actual dataset
-    return f"Database results for {query}: Active subscriber, tier 1."
-
-class EnterpriseAgent:
-    def __init__(self, llm=None, tools=None):
-        self.llm = llm or ChatOpenAI(temperature=0, model="gpt-4o")
-        # Base tools + whatever specific tools you add on the day
-        self.tools = tools or [process_refund, query_database]
+class AgentEvaluator:
+    def __init__(self, llm=None):
+        # Swap out OpenAI for Gemini
+        base_llm = llm or ChatGoogleGenerativeAI(temperature=0, model="gemini-2.5-flash")
         
-        # Initialize the agent
-        self.agent = initialize_agent(
-            tools=self.tools,
-            llm=self.llm,
-            agent=AgentType.OPENAI_FUNCTIONS,
-            verbose=True,
-            handle_parsing_errors=True
-        )
+        self.eval_chain = base_llm.with_structured_output(EvalResult)
+        
+        self.prompt_template = ChatPromptTemplate.from_messages([
+            ("system", "You are an expert enterprise AI evaluator. Grade the agent's actual response based on the given task and expected outcome. Be critical of hallucinations or skipped tool usage."),
+            ("human", "Task Given to Agent: {task}\nExpected Outcome/Knowledge: {expected_outcome}\nAgent's Actual Response: {agent_response}")
+        ])
 
-    def execute_task(self, prompt: str):
-        """Run the agent on a specific problem statement."""
-        print(f"Executing: {prompt}")
-        return self.agent.run(prompt)
+    def evaluate(self, task: str, expected_outcome: str, agent_response: str):
+        """Executes the automated evaluation loop."""
+        formatted_messages = self.prompt_template.format_messages(
+            task=task,
+            expected_outcome=expected_outcome,
+            agent_response=agent_response
+        )
+        
+        result = self.eval_chain.invoke(formatted_messages)
+        
+        print(f"\n--- Evaluation Score: {result.score}/5 ---")
+        print(f"Reasoning: {result.reasoning}\n")
+        return result.score

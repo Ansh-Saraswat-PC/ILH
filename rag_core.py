@@ -1,13 +1,13 @@
 import os
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFLoader, CSVLoader
-# Swap with Google/OpenAI embeddings as needed
-from langchain_openai import OpenAIEmbeddings 
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 class EnterpriseRAG:
     def __init__(self, embedding_model=None):
-        self.embeddings = embedding_model or OpenAIEmbeddings()
+        # Swap out OpenAI embeddings for Google's embedding model
+        self.embeddings = embedding_model or GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.vector_store = None
 
     def ingest_data(self, file_path: str):

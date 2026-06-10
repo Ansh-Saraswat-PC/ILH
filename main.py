@@ -1,18 +1,17 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file FIRST
-load_dotenv() 
+# Load the file
+load_dotenv()
+
+# Check both variations
+print("Is GEMINI_API_KEY active?:", "GEMINI_API_KEY" in os.environ)
 
 from rag_core import EnterpriseRAG
 from agent_harness import EnterpriseAgent
 from evaluator import AgentEvaluator
 
-# ... rest of your main.py code ...
-
-from rag_core import EnterpriseRAG
-from agent_harness import EnterpriseAgent
-from evaluator import AgentEvaluator
+# ... rest of your main.py code remains exactly the same ...
 
 def main():
     # 11:30 AM: Ingestion & Setup
