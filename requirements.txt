@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+langchain-google-genai
+langchain-community
+langchain-text-splitters
+pydantic
+python-dotenv
+faiss-cpu
+pandas
+requests

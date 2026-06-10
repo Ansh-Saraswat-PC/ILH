@@ -1,31 +1,46 @@
 import os
-from fastapi import FastAPI, HTTPException
+import shutil
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Load keys and import your working architecture
 load_dotenv()
 from agent_harness import EnterpriseAgent
+from rag_core import EnterpriseRAG  # Bring in your RAG engine
 
-app = FastAPI(title="IronLabs AIOPL Agent API")
-
-# Enable CORS so your React frontend can talk to this backend safely
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your React port (e.g., http://localhost:5173)
+    allow_origins=["*"], # Allows your Vercel frontend to connect
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define request schema
-class ChatRequest(BaseModel):
-    message: str
 
-# Instantiate the agent once when the server starts
 agent = EnterpriseAgent()
+rag_engine = EnterpriseRAG()
 
+@app.post("/api/upload")
+async def upload_document(file: UploadFile = File(...)):
+    try:
+        # 1. Save the uploaded file temporarily
+        file_location = f"temp_{file.filename}"
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        # 2. Feed it directly to your RAG core
+        rag_engine.ingest_data(file_location)
+        
+        # (Optional) Clean up the file after vectorizing
+        # os.remove(file_location)
+        
+        return {"status": "success", "message": f"{file.filename} vectorized successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ... keep your existing /api/chat endpoint here ...
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
