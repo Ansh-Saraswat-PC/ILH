@@ -1,0 +1,4 @@
+customer_id,name,status,balance,notes
+992,Alice Smith,Active,150.00,Requested refund for accidental double billing.
+504,Bob Jones,Inactive,0.00,Account closed last month.
+311,Charlie Brown,Active,45.00,Pending support ticket regarding login issues.
