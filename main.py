@@ -1,3 +1,15 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file FIRST
+load_dotenv() 
+
+from rag_core import EnterpriseRAG
+from agent_harness import EnterpriseAgent
+from evaluator import AgentEvaluator
+
+# ... rest of your main.py code ...
+
 from rag_core import EnterpriseRAG
 from agent_harness import EnterpriseAgent
 from evaluator import AgentEvaluator
